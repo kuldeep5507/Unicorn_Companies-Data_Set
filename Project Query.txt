@@ -1,0 +1,271 @@
+
+#. PostgreSQL Projects With Some Basic and Medium Query on Unicorn Companies.
+                  
+
+SELECT * FROM Students;
+SELECT * FROM Sales;
+SELECT * FROM dates;
+SELECT * FROM Product_Emissions;
+SELECT * FROM funding;
+SELECT * FROM industreies;
+SELECT * FROM Companies;
+
+
+--(1.) COUNT Total Number of Companies.
+
+SELECT COUNT('Company')
+FROM Companies;
+
+
+--(2.) Get Company, Country Via Belong to Continent: Europe.
+
+SELECT company_id
+, Company
+, Country
+, Continent
+FROM Companies
+WHERE Continent='Europe'
+ORDER BY Company_id;
+
+
+--(3.) Top 10's Company From Asia Where Country is India.
+
+SELECT Company_id
+, Company
+, Country
+, Continent
+FROM Companies
+WHERE Country='India' AND Continent='Asia'
+ORDER BY Company_id
+LIMIT 10;
+
+
+--(4.) Top 10's Company From North America Where Country is United States.
+
+SELECT Company_id
+, Company
+, Country
+, Continent
+FROM Companies
+WHERE Country='United States' AND Continent='North America'
+ORDER BY Company_id
+LIMIT 10;
+
+--(5.) To Find Maximum of Company_id Where it's Belong Through Europe.
+
+
+SELECT Company_id, Company, Continent FROM Companies
+WHERE Company_id >(SELECT max(Company_id) FROM Companies
+WHERE Continent = 'Europe');
+
+SELECT Company_id
+, Industry 
+FROM Industreies
+WHERE Company_id > (SELECT max(Company_id) 
+FROM Industreies
+WHERE Industry = 'Fintech');
+
+
+--(6.)  To Find The Average Of Valuation With
+        Their Company_id and Slect_Investors.
+
+SELECT Company_id, Valuation, Select_investors
+FROM Funding
+WHERE Valuation > 
+(SELECT AVG(Valuation) FROM Funding)
+ORDER BY Company_id;
+
+
+--(7.) Using Group By To Group 'Product_Emissions'
+       With Valuation With Round at 2 Place.
+
+SELECT id, ROUND (AVG(Weight_kg), 2) 
+FROM Product_Emissions GROUP BY id 
+HAVING AVG(Weight_kg)>=ALL 
+(SELECT AVG(Weight_kg) FROM Product_Emissions 
+GROUP BY id);
+
+
+--(8.) Total Number of City In each Specific
+        Country.
+
+SELECT Country
+, COUNT(City) AS Total_City
+FROM Companies
+GROUP BY Country
+ORDER BY Total_City DESC
+LIMIT 10;
+
+
+--(9.)  Use Of CASE Show the 'USA' As 'Food, Beverage &	Tobacco', 'Japan' AS 'High_Tech',
+-- 'Germany' AS 'AutoMobiles & Components', 'United Kingdom' As 'Materials' and 'Other'.
+
+SELECT product_name,
+    CASE Country
+        WHEN 'USA' THEN 'Food, Beverage & Tobacco'
+        WHEN 'Japan' THEN 'High_Tech'
+        WHEN 'Germany' THEN 'AutoMobiles & Components'
+		WHEN 'United Kingdom' THEN 'Materials'
+        ELSE 'Other'
+    END AS category_group
+FROM Product_Emissions;
+
+
+--(10. ) Top Pick's Of Industry By Country & Continent.
+
+SELECT Industreies.Company_id
+, Industreies.Industry
+, Companies.Country
+, Companies.Continent
+FROM Industreies
+JOIN Companies 
+ON  Industreies.Company_id = Companies.Company_id
+WHERE Companies.Company_id<=10
+ORDER BY Companies.Company_id ASC;
+
+
+--(11. ) Named Company Which Belong to Health into Asia in India.
+
+SELECT Industreies.Company_id
+, Companies.Company
+, Industreies.Industry
+, Companies.Country
+, Companies.Continent
+FROM Industreies
+JOIN Companies 
+ON  Industreies.Company_id = Companies.Company_id
+WHERE Industreies.Industry='Health' AND Companies.Country='India'
+ORDER BY Companies.Company_id ASC;
+
+
+--(12. ) Named Company Which Belong to Fintech in Europe.
+
+SELECT Industreies.Company_id
+, Companies.Company
+, Industreies.Industry
+, Companies.Country
+, Companies.Continent
+FROM Industreies
+JOIN Companies 
+ON  Industreies.Company_id = Companies.Company_id
+WHERE Industreies.Industry='Fintech' AND Companies.Continent='Europe'
+ORDER BY Companies.Company_id ASC
+LIMIT 5;
+
+
+
+--(13. ) Top Company With Their Industry, Valuation and Selected Investors.
+
+SELECT Industreies.Company_id
+, Companies.Company
+, Industreies.Industry
+, Funding.Valuation
+, Companies.Country
+, Companies.Continent
+, Funding.Select_Investors
+FROM Industreies
+INNER JOIN Companies 
+ON  Industreies.Company_id = Companies.Company_id
+INNER JOIN Funding
+ON Industreies.Company_id = Funding.Company_id
+WHERE Funding.Valuation>='6000000000' AND Industreies.Industry='Edtech' 
+ORDER BY Industreies.Company_id;
+
+
+--(14. ) Top Company With Their Industry, Valuation, Funding and Selected Investors.
+
+SELECT Industreies.Company_id
+, Companies.Company
+, Industreies.Industry
+, Companies.Continent 
+, Funding.Valuation
+, Funding.funding
+, Funding.Select_Investors
+FROM Industreies
+INNER JOIN Companies 
+ON  Industreies.Company_id = Companies.Company_id
+INNER JOIN Funding
+ON Industreies.Company_id = Funding.Company_id
+WHERE  Funding.funding>='600000000'
+ORDER BY Industreies.Company_id ASC
+LIMIT 10;
+
+
+--(15. ) Top Company With Their Industry, Valuation, Funding and Selected Investors.
+
+
+
+SELECT Sales.Index
+, Sales.Client_type
+, Students.inter_dom
+, Students.Gender
+, Sales.Product_line
+, Sales.Quantity
+, Sales.Total
+FROM Sales
+INNER JOIN Students
+ON Sales.Index = Students.Index
+WHERE Sales.Client_type='Wholesale' AND Students.inter_dom = 'Inter'
+ORDER BY Sales.Index;
+
+
+--(16. )  To Find An Industry 'Edtech' From Asia WHere It's Company 'Intel Coporation'.
+
+
+SELECT Funding.Company_id
+, Companies.Company
+, Industreies.Industry
+, Product_Emissions.Company
+, Product_Emissions.Product_name
+, Product_Emissions.Industry_Group
+, Product_Emissions.Carbon_footprint_pcf
+, Funding.Valuation
+, Companies.Country
+, Companies.Continent
+FROM Industreies
+INNER JOIN Funding
+ON Industreies.Company_id = Funding.Company_id
+INNER JOIN Companies
+ON Industreies.Company_id = Companies.Company_id
+INNER JOIN Product_Emissions
+ON Industreies.Index = Product_Emissions.Index
+WHERE Industreies.Industry = 'Edtech' AND ( Product_Emissions.Product_name = 'Mobile CPU' OR Product_Emissions.Industry_Group = 'Energy' )
+ORDER BY Funding.Company_id ASC;
+
+
+--(17. )  To Find 'Inter' with Company 'CoinDCX' With Their Valuation.
+
+
+SELECT Funding.Company_id
+, Students.inter_dom
+, Funding.Valuation
+, Industreies.Industry
+, Companies.Company
+, Companies.Continent
+FROM Students
+INNER JOIN Funding
+ON Students.Index = Funding.Index
+INNER JOIN Industreies
+ON Funding.company_id = Industreies.Company_id
+INNER JOIN Companies
+ON Funding.Company_id = Companies.Company_id
+WHERE Companies.Company = 'CoinDCX'
+ORDER BY Funding.Company_id;
+
+
+--(18. )  How ManY Industry Started Since '2019' In 'India' With Their Company Name.
+
+SELECT Companies.Company_id
+, Companies.Company
+, Industreies.Industry
+, Dates.Year_Founded
+, Dates.Date_Joined
+, Companies.Country
+, Companies.Continent
+FROM Companies
+INNER JOIN Dates
+ON Companies.Company_id = Dates.Company_id
+INNER JOIN Industreies
+ON Companies.Company_id = Industreies.Company_id
+WHERE Year_Founded >= '2019' AND  Companies.Country = 'India'
+ORDER BY Companies.Company_id ASC;
